@@ -5,10 +5,12 @@ import com.opencsv.CSVWriter;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
+import org.json.simple.JSONObject;
 
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.List;
 
@@ -38,7 +40,7 @@ public class Main {
         } catch(Exception exIO) {
             exIO.printStackTrace();
         }
-
+        List<Employee> lstOfEmpl = new java.util.ArrayList<Employee>();
         try(CSVReader csvReader = new CSVReader(new FileReader("data.csv"))) {
             ColumnPositionMappingStrategy<Employee> strategy = new ColumnPositionMappingStrategy<>();
             strategy.setType(Employee.class);
@@ -46,10 +48,25 @@ public class Main {
             CsvToBean<Employee> ctb = new CsvToBeanBuilder<Employee>(csvReader)
                     .withMappingStrategy(strategy)
                     .build();
-            List<Employee> lstOfEmpl = ctb.parse();
+            lstOfEmpl = ctb.parse();
             lstOfEmpl.forEach(System.out::println);
         } catch(Exception ex) {
             ex.printStackTrace();
         }
+
+        for (Employee empl : lstOfEmpl) {
+            JSONObject jo = new JSONObject();
+            jo.put("id", empl.id);
+            jo.put("firstName", empl.firstName);
+            jo.put("lastName", empl.lastName);
+            jo.put("age", empl.age);
+            try(PrintWriter pw = new PrintWriter(new java.io.FileOutputStream("data.json", true))) {
+                pw.write(jo.toJSONString());
+                pw.flush();
+            } catch(java.io.FileNotFoundException ex) {
+                ex.printStackTrace();
+            }
+        }
+
     }
 }
